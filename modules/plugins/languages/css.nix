@@ -8,34 +8,27 @@
   inherit (lib.options) mkEnableOption mkOption;
   inherit (lib.meta) getExe;
   inherit (lib.modules) mkIf mkMerge;
-  inherit (lib.lists) isList;
   inherit (lib.types) enum either listOf package str;
   inherit (lib.nvim.types) mkGrammarOption;
-  inherit (lib.nvim.lua) expToLua;
+  inherit (lib.nvim.attrsets) mapListToAttrs;
 
   cfg = config.vim.languages.css;
 
-  defaultServer = "vscode-langservers-extracted";
+  defaultServer = ["cssls"];
   servers = {
-    vscode-langservers-extracted = {
-      package = pkgs.vscode-langservers-extracted;
-      lspConfig = ''
-        -- enable (broadcasting) snippet capability for completion
-        -- see <https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#cssls>
-        local css_capabilities = vim.lsp.protocol.make_client_capabilities()
-        css_capabilities.textDocument.completion.completionItem.snippetSupport = true
-
-        -- cssls setup
-        lspconfig.cssls.setup {
-          capabilities = css_capabilities;
-          on_attach = default_on_attach;
-          cmd = ${
-          if isList cfg.lsp.package
-          then expToLua cfg.lsp.package
-          else ''{"${cfg.lsp.package}/bin/vscode-css-language-server", "--stdio"}''
-        }
-        }
-      '';
+    cssls = {
+      config = {
+        cmd = ["${pkgs.vscode-langservers-extracted}/bin/vscode-css-language-server" "--stdio"];
+        filetypes = ["css" "scss" "less"];
+        # needed to enable formatting
+        init_options = {provideFormatter = true;};
+        root_markers = [".git" "package.json"];
+        settings = {
+          css.validate = true;
+          scss.validate = true;
+          less.validate = true;
+        };
+      };
     };
   };
 
@@ -84,7 +77,7 @@ in {
 
       server = mkOption {
         description = "CSS LSP server to use";
-        type = enum (attrNames servers);
+        type = listOf (enum (attrNames servers));
         default = defaultServer;
       };
 
@@ -120,8 +113,12 @@ in {
     })
 
     (mkIf cfg.lsp.enable {
-      vim.lsp.lspconfig.enable = true;
-      vim.lsp.lspconfig.sources.css-lsp = servers.${cfg.lsp.server}.lspConfig;
+      vim.lsp.servers =
+        mapListToAttrs (name: {
+          inherit name;
+          value = servers.${name}.config;
+        })
+        cfg.lsp.server;
     })
 
     (mkIf cfg.format.enable {
