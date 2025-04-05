@@ -5,31 +5,30 @@
   ...
 }: let
   inherit (builtins) attrNames;
-  inherit (lib.options) mkOption mkEnableOption literalExpression;
+  inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.meta) getExe;
   inherit (lib.modules) mkIf mkMerge;
-  inherit (lib.lists) isList;
-  inherit (lib.types) enum either package listOf str bool;
+  inherit (lib.types) enum package listOf bool;
+  inherit (lib.generators) mkLuaInline;
   inherit (lib.nvim.types) diagnostics mkGrammarOption;
-  inherit (lib.nvim.lua) expToLua;
+  inherit (lib.nvim.attrsets) mapListToAttrs;
 
   cfg = config.vim.languages.bash;
 
   defaultServer = "bash-ls";
   servers = {
     bash-ls = {
-      package = pkgs.bash-language-server;
-      lspConfig = ''
-        lspconfig.bashls.setup{
-          capabilities = capabilities;
-          on_attach = default_on_attach;
-          cmd = ${
-          if isList cfg.lsp.package
-          then expToLua cfg.lsp.package
-          else ''{"${cfg.lsp.package}/bin/bash-language-server",  "start"}''
+      config = {
+        cmd = [(getExe pkgs.bash-language-server) "start"];
+        settings = {
+          bashIde = {
+            globPattern =
+              mkLuaInline "vim.env.GLOB_PATTERN or '*@(.sh|.inc|.bash|.command)'";
+          };
         };
-        }
-      '';
+        filetypes = ["sh" "bash"];
+        root_markers = [".git"];
+      };
     };
   };
 
@@ -60,15 +59,8 @@ in {
 
       server = mkOption {
         description = "Bash LSP server to use";
-        type = enum (attrNames servers);
-        default = defaultServer;
-      };
-
-      package = mkOption {
-        description = "bash-language-server package, or the command to run as a list of strings";
-        example = literalExpression ''[lib.getExe pkgs.nodePackages.bash-language-server "start"]'';
-        type = either package (listOf str);
-        default = pkgs.bash-language-server;
+        type = listOf (enum (attrNames servers));
+        default = [defaultServer];
       };
     };
 
@@ -108,8 +100,12 @@ in {
     })
 
     (mkIf cfg.lsp.enable {
-      vim.lsp.lspconfig.enable = true;
-      vim.lsp.lspconfig.sources.bash-lsp = servers.${cfg.lsp.server}.lspConfig;
+      vim.lsp.servers =
+        mapListToAttrs (name: {
+          inherit name;
+          value = servers.${name}.config;
+        })
+        cfg.lsp.server;
     })
 
     (mkIf cfg.format.enable {
