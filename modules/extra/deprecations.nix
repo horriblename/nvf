@@ -20,6 +20,10 @@
     # 2025-02-07
     scrollOff = "scrolloff";
   };
+
+  lspOptRemovalMsg = ''
+    `vim.languages.<lang>.lsp.opts` are now moved to `vim.lsp.servers.<server_name>.init_options`
+  '';
 in {
   imports = concatLists [
     [
@@ -111,6 +115,9 @@ in {
         under the diagnostics module. Please consider using one of 'vim.diagnostics.config' or
         'vim.luaConfigRC' to configure LSP lines for Neovim through its own diagnostics API.
       '')
+
+      # 2025-04-05
+      (mkRemovedOptionModule ["vim" "languages" "clang" "lsp" "opts"] lspOptRemovalMsg)
     ]
 
     # Migrated via batchRenameOptions. Further batch renames must be below this line.
