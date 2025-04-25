@@ -109,6 +109,16 @@ h3 {
 	margin: 0.5rem 0.25rem;
 }
 
+@keyframes flash {
+	0%   { background-color: yellow; }
+	33%  { background-color: transparent; }
+	66%  { background-color: yellow; }
+	100% { background-color: transparent; }
+}
+
+:target {
+	animation: flash 1s ease;
+}
 p {
 	@include margined;
 }
