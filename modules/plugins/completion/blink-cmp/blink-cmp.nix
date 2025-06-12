@@ -139,6 +139,15 @@ in {
       close = mkMappingOption "Close [blink.cmp]" "<C-e>";
       scrollDocsUp = mkMappingOption "Scroll docs up [blink.cmp]" "<C-d>";
       scrollDocsDown = mkMappingOption "Scroll docs down [blink.cmp]" "<C-f>";
+
+      cmdlineComplete = mkMappingOption "Cmdline complete [blink.cmp]" "<C-Space>";
+      # default is not <CR> because it would interfere with submitting the command
+      cmdlineConfirm = mkMappingOption "Cmdline confirm [blink.cmp]" null;
+      cmdlineNext = mkMappingOption "Cmdline next item [blink.cmp]" "<Tab>";
+      cmdlinePrevious = mkMappingOption "Cmdline previous item [blink.cmp]" "<S-Tab>";
+      cmdlineClose = mkMappingOption "Cmdline close [blink.cmp]" "<C-e>";
+      cmdlineScrollDocsUp = mkMappingOption "Cmdline scroll docs up [blink.cmp]" "<C-d>";
+      cmdlineScrollDocsDown = mkMappingOption "Cmdline scroll docs down [blink.cmp]" "<C-f>";
     };
 
     sourcePlugins = let
