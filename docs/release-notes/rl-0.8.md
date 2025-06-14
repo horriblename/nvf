@@ -24,6 +24,9 @@
   module interface. You may set [](#opt-vim.clipboard.registers) appropriately
   to configure Neovim to use the system clipboard.
 
+- `blink.cmp` cmdline keybinds are now separated from insert-mode keybinds. This
+  is to make it possible to use different keys for the cmdline variants
+
 [NotAShelf](https://github.com/notashelf):
 
 [typst-preview.nvim]: https://github.com/chomosuke/typst-preview.nvim
@@ -120,6 +123,7 @@
 - Moved code setting `additionalRuntimePaths` and `enableLuaLoader` out of
   `luaConfigPre`'s default to prevent being overridden
 - Use conform over custom autocmds for LSP format on save
+- Separate cmdline keybinds in blink.cmp
 
 [diniamo](https://github.com/diniamo):
 
@@ -423,7 +427,7 @@
 
 - Add missing `transparent` option for existing
   [onedark.nvim](https://github.com/navarasu/onedark.nvim) theme.
-  
+
 [theutz](https://github.com/theutz):
 
 - Added "auto" flavour for catppuccin theme
