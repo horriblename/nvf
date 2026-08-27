@@ -98,9 +98,14 @@ in {
       enable =
         mkEnableOption "Rust formatting"
         // {
-          default = !cfg.lsp.enable && config.vim.languages.enableFormat;
+          default =
+            config.vim.languages.enableFormat
+            && (!cfg.lsp.enable || cfg.format.type != defaultFormat || cfg.lsp.servers != defaultServers);
           defaultText = literalMD ''
-            Disabled if Rust LSP is enabled, otherwise follows {option}`vim.languages.enableFormat`
+            Disabled if the default `format.type` and `lsp.servers` are used,
+            since the default formatter is the same as the LSP.
+
+            `config.vim.languages.enableFormat` otherwise.
           '';
         };
 

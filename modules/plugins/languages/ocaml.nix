@@ -47,7 +47,12 @@ in {
     };
 
     format = {
-      enable = mkEnableOption "OCaml formatting support (ocamlformat)" // {default = config.vim.languages.enableFormat;};
+      enable =
+        mkEnableOption "OCaml formatting support (ocamlformat)"
+        // {
+          default = config.vim.languages.enableFormat;
+          defaultText = literalExpression "config.vim.languages.enableFormat";
+        };
       type = mkOption {
         type = listOf (enum formats);
         default = defaultFormat;

@@ -6,7 +6,7 @@
 }: let
   inherit (lib) genAttrs;
   inherit (lib.modules) mkIf mkMerge;
-  inherit (lib.options) mkEnableOption mkOption literalExpression;
+  inherit (lib.options) mkEnableOption mkOption literalExpression literalMD;
   inherit (lib.types) enum listOf;
   inherit (lib.nvim.types) mkGrammarOption;
 
@@ -52,8 +52,15 @@ in {
       enable =
         mkEnableOption "TOML formatting"
         // {
-          default = config.vim.languages.enableFormat;
-          defaultText = literalExpression "config.vim.languages.enableFormat";
+          default =
+            config.vim.languages.enableFormat
+            && (!cfg.lsp.enable || cfg.format.type != defaultFormat || cfg.lsp.servers != defaultServers);
+          defaultText = literalMD ''
+            Disabled if the default `format.type` and `lsp.servers` are used,
+            since the default formatter is the same as the LSP.
+
+            `config.vim.languages.enableFormat` otherwise.
+          '';
         };
 
       type = mkOption {

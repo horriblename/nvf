@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  inherit (lib.options) literalExpression mkEnableOption mkOption;
+  inherit (lib.options) literalExpression literalMD mkEnableOption mkOption;
   inherit (lib.modules) mkIf mkMerge;
   inherit (lib) genAttrs;
   inherit (lib.types) enum listOf;
@@ -49,8 +49,15 @@ in {
       enable =
         mkEnableOption "Treesitter Query  formatting"
         // {
-          default = config.vim.languages.enableFormat;
-          defaultText = literalExpression "config.vim.languages.enableFormat";
+          default =
+            config.vim.languages.enableFormat
+            && (!cfg.lsp.enable || cfg.format.type != defaultFormat || cfg.lsp.servers != defaultServers);
+          defaultText = literalMD ''
+            Disabled if the default `format.type` and `lsp.servers` are used,
+            since the default formatter is the same as the LSP.
+
+            `config.vim.languages.enableFormat` otherwise.
+          '';
         };
 
       type = mkOption {
