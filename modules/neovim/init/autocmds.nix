@@ -10,6 +10,7 @@
   inherit (lib.nvim.types) luaInline;
   inherit (lib.nvim.lua) toLuaObject;
   inherit (lib.nvim.dag) entryAfter entryBetween;
+  inherit (lib.trivial) xor;
 
   autocommandType = submodule {
     options = {
@@ -192,8 +193,8 @@ in {
 
     assertions = [
       {
-        assertion = builtins.all (cmd: (cmd.command == null || cmd.callback == null)) cfg.autocmds;
-        message = "An autocommand cannot have both 'command' and 'callback' defined at the same time.";
+        assertion = builtins.all (cmd: xor (cmd.command != null) (cmd.callback != null)) cfg.autocmds;
+        message = "An autocommand must have exactly one of 'command' or 'callback' defined.";
       }
     ];
   };
